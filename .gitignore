@@ -11,3 +11,4 @@ wheels/
 
 postgresql/mount/postgres
 postgresql/mount/schemas
+*.docker-compose.yml
