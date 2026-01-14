@@ -8,6 +8,7 @@ wheels/
 
 # Virtual environments
 .venv
+uv.lock
 
 postgresql/mount/postgres
 postgresql/mount/schemas
