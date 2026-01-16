@@ -1,7 +1,7 @@
 [project]
-name = "relational-databases"
+name = "relational-databases-labs"
 version = "0.1.0"
-description = "relational-databases"
+description = "relational-databases-labs"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
@@ -13,10 +13,9 @@ dependencies = [
     "jupyter-tabnine>=1.2.3",
     "jupyterlab>=4.5.1",
     "mimesis>=18.0.0",
-    "nbgrader>=0.9.5",
     "pandas>=2.3.3",
     "prettytable==3.7.0",
-    "psycopg2-binary >=2.9.11",
+    "psycopg2[binary] >=2.9.11",
     "psycopg[binary]>=3.3.2",
     "pydantic>=1.10.26",
     "sqlalchemy>=1.4.54",
