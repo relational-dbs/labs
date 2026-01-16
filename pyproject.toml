@@ -15,7 +15,7 @@ dependencies = [
     "mimesis>=18.0.0",
     "pandas>=2.3.3",
     "prettytable==3.7.0",
-    "psycopg2[binary] >=2.9.11",
+    "psycopg2-binary >=2.9.11",
     "psycopg[binary]>=3.3.2",
     "pydantic>=1.10.26",
     "sqlalchemy>=1.4.54",
