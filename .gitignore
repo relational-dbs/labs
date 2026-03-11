@@ -13,3 +13,4 @@ uv.lock
 postgresql/mount/postgres
 postgresql/mount/schemas
 *.docker-compose.yml
+*.dockerfile
