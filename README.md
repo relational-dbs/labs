@@ -45,20 +45,140 @@ provides:
 Everything runs locally on your machine via Docker; no remote server or VPN is
 required for the labs themselves.
 
+```mermaid
+flowchart LR
+    classDef host  fill:#e8f0fe,stroke:#4285f4,stroke-width:1.5px,color:#174ea6
+    classDef ctr   fill:#e6f4ea,stroke:#34a853,stroke-width:1.5px,color:#137333
+    classDef db    fill:#fef7e0,stroke:#f9ab00,stroke-width:1.5px,color:#b06000
+    classDef aux   fill:#f1f3f4,stroke:#9aa0a6,stroke-width:1px,color:#3c4043
+
+    subgraph HOST["HOST MACHINE"]
+        direction TB
+        JL["JupyterLab<br/><i>kernel: python3</i>"]:::host
+        INF["postgresql_infra.ipynb<br/>build + start"]:::host
+        DL["postgresql_dataload.ipynb<br/>create DBs + import"]:::host
+        SRC["schemas/<br/>6 datasets + ERDs"]:::host
+        VOL["mount/postgres/<br/>data · schemas"]:::host
+    end
+
+    subgraph CT["DOCKER CONTAINER · postgres:18.1-trixie"]
+        direction TB
+        PG[("PostgreSQL 18")]:::ctr
+        EXT["PostGIS 3 · pgvector 0.8.2 · pg_cron<br/>plpython3u · pg_trgm · unaccent<br/>pg_stat_statements · ltree · hstore"]:::aux
+        V1["/var/lib/postgresql"]:::aux
+        V2["/schemas"]:::aux
+    end
+
+    subgraph DBS["DATABASES"]
+        direction TB
+        A[(aerolinea)]:::db
+        B[(amazon)]:::db
+        C[(banco)]:::db
+        D[(biblioteca)]:::db
+        E[(uber)]:::db
+        F[(youtube)]:::db
+    end
+
+    JL --> INF
+    JL --> DL
+    SRC -->|copy| DL
+    INF -->|"docker compose up"| CT
+    DL -->|"psql import"| PG
+    VOL -.->|bind| V1
+    VOL -.->|bind| V2
+    PG --- EXT
+    PG --> A & B & C & D & E & F
+    JL -.->|"localhost:5423"| PG
+```
+
 ---
 
 ## Prerequisites
 
-| Tool | Minimum version | Purpose |
-|---|---|---|
-| [Docker Desktop](https://www.docker.com/products/docker-desktop/) | recent | Runs the PostgreSQL container |
-| [Git](https://git-scm.com/) | — | Clones this submodule |
-| [uv](https://docs.astral.sh/uv/) | — | Creates the Python virtual environment |
-| Python | 3.13 | Kernel used by the notebooks |
+The environment needs **Docker**, **Git**, and **uv**. **Python 3.13** (the notebook
+kernel) is installed and managed automatically by `uv` — no separate Python download
+is required.
+
+| Tool | Purpose | Windows | macOS | Linux |
+|---|---|---|---|---|
+| **Docker** | Runs the PostgreSQL container | [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/) | [Docker Desktop](https://docs.docker.com/desktop/setup/install/mac-install/) | [Docker Engine](https://docs.docker.com/engine/install/) · [Desktop](https://docs.docker.com/desktop/setup/install/linux/) |
+| **Git** | Clones the submodule | [Git for Windows](https://github.com/git-for-windows/git/releases/latest) | [Homebrew](https://brew.sh/) → `brew install git` | `apt`/`dnf` · [per-distro](https://git-scm.com/download/linux) |
+| **uv** | Creates the venv + kernel | [install.ps1](https://astral.sh/uv/install.ps1) | [install.sh](https://astral.sh/uv/install.sh) | [install.sh](https://astral.sh/uv/install.sh) |
+| **Python 3.13** | Kernel | via `uv` | via `uv` | via `uv` |
 
 > **Note:** this repository is a **git submodule** of the course project. If you
 > cloned the parent repository, initialize submodules before proceeding (see
 > [Quickstart](#quickstart)).
+
+### Docker
+
+**Windows** — Docker Desktop (requires WSL2). Install via the
+[Windows install guide](https://docs.docker.com/desktop/setup/install/windows-install/)
+or download directly:
+[Docker Desktop Installer.exe](https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe)
+
+**macOS** — Docker Desktop ([install guide](https://docs.docker.com/desktop/setup/install/mac-install/)):
+- Apple Silicon: [Docker.dmg (arm64)](https://desktop.docker.com/mac/main/arm64/Docker.dmg)
+- Intel: [Docker.dmg (amd64)](https://desktop.docker.com/mac/main/amd64/Docker.dmg)
+
+**Linux** — [Docker Engine](https://docs.docker.com/engine/install/)
+(e.g. [Ubuntu](https://docs.docker.com/engine/install/ubuntu/)), or
+[Docker Desktop for Linux](https://docs.docker.com/desktop/setup/install/linux/).
+
+Verify: `docker --version` and `docker compose version`.
+
+### Git
+
+**Windows** — install [Git for Windows](https://github.com/git-for-windows/git/releases/latest).
+
+**macOS** — via [Homebrew](https://brew.sh/) (recommended):
+
+```bash
+# 1. Install Homebrew (package manager)
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# 2. Install Git
+brew install git
+```
+
+or via Xcode Command Line Tools: `xcode-select --install`.
+
+**Linux** — use your package manager ([all distributions](https://git-scm.com/download/linux)):
+
+```bash
+sudo apt install git   # Debian / Ubuntu
+sudo dnf install git   # Fedora
+```
+
+Verify: `git --version`.
+
+### uv
+
+**Windows** (PowerShell):
+
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+**macOS / Linux**:
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Full instructions: [uv installation docs](https://docs.astral.sh/uv/getting-started/installation/).
+
+### Python 3.13
+
+Managed by `uv` — running `uv sync` in this project provisions the correct Python
+(≥ 3.13) automatically. To install it explicitly:
+
+```bash
+uv python install 3.13
+```
+
+A standalone install is also available at [python.org](https://www.python.org/downloads/)
+([Windows](https://www.python.org/downloads/windows/), [macOS](https://www.python.org/downloads/macos/)) if you prefer to manage Python yourself.
 
 ---
 
@@ -246,6 +366,26 @@ the full enable/disable list):
 ## Workflow
 
 The two notebooks encode the full lifecycle and are meant to be run in order:
+
+```mermaid
+flowchart TB
+    classDef step fill:#e8f0fe,stroke:#4285f4,stroke-width:1.5px,color:#174ea6
+    classDef dec  fill:#fce8e6,stroke:#ea4335,stroke-width:1.5px,color:#a50e0e
+    classDef done fill:#e6f4ea,stroke:#34a853,stroke-width:1.5px,color:#137333
+
+    S1["1 · Run postgresql_infra.ipynb"]:::step --> D{POSTGRESQL_START_FROM_SCRATCH?}:::dec
+    D -->|"yes"| S2["Reset mount/"]:::step
+    D -->|"no (default)"| S3["Reuse volumes"]:::step
+    S2 --> S4["Generate dockerfile + compose"]:::step
+    S3 --> S4
+    S4 --> S5["docker compose up -d --wait"]:::step
+    S5 --> S6["Container healthy"]:::done
+    S6 --> S7["2 · Run postgresql_dataload.ipynb"]:::step
+    S7 --> S8["Copy schemas/ → mount/"]:::step
+    S8 --> S9["DROP + CREATE 6 databases"]:::step
+    S9 --> S10["psql import *_db.sql"]:::step
+    S10 --> S11[("6 databases ready")]:::done
+```
 
 1. **`postgresql_infra.ipynb`**
    - Writes `postgresql.dockerfile` (PostgreSQL 18 + PostGIS + `plpython3u` +
