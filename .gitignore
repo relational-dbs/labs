@@ -6,8 +6,9 @@ dist/
 wheels/
 *.egg-info
 
-# Virtual environments
+# Virtual environment and local cross-platform dependency resolution
 .venv
+# Intentionally unversioned: students resolve on Windows, macOS, and Linux.
 uv.lock
 
 postgresql/mount/postgres

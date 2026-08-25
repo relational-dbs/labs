@@ -23,7 +23,7 @@ Jupyter/Python toolchain for exploring and querying them.
 9. [Available extensions](#available-extensions)
 10. [Workflow](#workflow)
 11. [Troubleshooting](#troubleshooting)
-12. [Course notes](#course-notes)
+12. [Project notes](#project-notes)
 
 ---
 
@@ -43,7 +43,9 @@ provides:
   SQLModel, pandas, …).
 
 Everything runs locally on your machine via Docker; no remote server or VPN is
-required for the labs themselves.
+required for the labs themselves. The repository is self-contained: it owns its
+Python project, virtual environment, Jupyter kernel, Docker configuration, schemas,
+and PostgreSQL data volume.
 
 ```mermaid
 flowchart LR
@@ -102,13 +104,9 @@ is required.
 | Tool | Purpose | Windows | macOS | Linux |
 |---|---|---|---|---|
 | **Docker** | Runs the PostgreSQL container | [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/) | [Docker Desktop](https://docs.docker.com/desktop/setup/install/mac-install/) | [Docker Engine](https://docs.docker.com/engine/install/) · [Desktop](https://docs.docker.com/desktop/setup/install/linux/) |
-| **Git** | Clones the submodule | [Git for Windows](https://github.com/git-for-windows/git/releases/latest) | [Homebrew](https://brew.sh/) → `brew install git` | `apt`/`dnf` · [per-distro](https://git-scm.com/download/linux) |
+| **Git** | Clones this repository | [Git for Windows](https://github.com/git-for-windows/git/releases/latest) | [Homebrew](https://brew.sh/) → `brew install git` | `apt`/`dnf` · [per-distro](https://git-scm.com/download/linux) |
 | **uv** | Creates the venv + kernel | [install.ps1](https://astral.sh/uv/install.ps1) | [install.sh](https://astral.sh/uv/install.sh) | [install.sh](https://astral.sh/uv/install.sh) |
 | **Python 3.13** | Kernel | via `uv` | via `uv` | via `uv` |
-
-> **Note:** this repository is a **git submodule** of the course project. If you
-> cloned the parent repository, initialize submodules before proceeding (see
-> [Quickstart](#quickstart)).
 
 ### Docker
 
@@ -185,14 +183,14 @@ A standalone install is also available at [python.org](https://www.python.org/do
 ## Quickstart
 
 ```bash
-# 1. From the parent repository, fetch the submodule
-git submodule update --init --recursive
+# 1. Clone this repository
+git clone https://github.com/relational-dbs/labs-setup.git
 
-# 2. Enter this project and install its dependencies (own venv + kernel)
+# 2. Enter the project and install its dependencies
 cd labs-setup
 uv sync
 
-# 3. Launch JupyterLab with this project's kernel
+# 3. Launch JupyterLab
 uv run jupyter lab
 ```
 
@@ -328,6 +326,28 @@ The project is managed with [uv](https://docs.astral.sh/uv/). Running `uv sync`
 creates the `.venv` and installs the kernel used by the notebooks (`python3`, from
 the `relational-databases-labs` environment).
 
+### Cross-platform lockfile policy
+
+`pyproject.toml` is the committed source of truth for dependencies. `uv.lock` is
+intentionally **not versioned** because students resolve the environment on Windows,
+macOS, and Linux. Both `uv sync` and `uv run` may create or update a local
+`uv.lock`; this is expected, and Git ignores the file. Never commit or submit it.
+
+If you copy or reuse the same checkout on a different operating system, remove the
+local lockfile before resolving the environment again:
+
+```powershell
+# Windows PowerShell
+Remove-Item uv.lock -ErrorAction SilentlyContinue
+uv sync
+```
+
+```bash
+# macOS / Linux
+rm -f uv.lock
+uv sync
+```
+
 Key dependencies:
 
 | Category | Packages |
@@ -424,11 +444,10 @@ To force a clean rebuild of the image, uncomment the
 
 ---
 
-## Course notes
+## Project notes
 
-- This is an **external submodule** (`github.com/relational-dbs/labs-setup`). It keeps
-  its **own** `pyproject.toml`, virtual environment, and Jupyter kernel — do not
-  modify it from the parent course repository.
+- This is a self-contained repository with its own `pyproject.toml`, virtual
+  environment, Jupyter kernel, Docker artifacts, schemas, and PostgreSQL data.
 - The Dockerfile and `docker-compose` file are generated artifacts; if you need a
   permanent change, edit the generation cells in `postgresql_infra.ipynb`, not the
   generated files.
